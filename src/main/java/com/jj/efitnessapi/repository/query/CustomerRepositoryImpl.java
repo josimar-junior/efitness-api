@@ -20,7 +20,7 @@ public class CustomerRepositoryImpl implements CustomerRepositoryQuery {
 	@Override
 	public Page<Customer> filter(CustomerFilter filter, Pageable pageable) {
 		
-		StringBuilder jpql = new StringBuilder("from Customer c");
+		StringBuilder jpql = new StringBuilder("from Customer c ");
 		
 		if(hasFilter(filter)) {
 			jpql.append("where ").append(createRestrictions(filter));
@@ -28,17 +28,9 @@ public class CustomerRepositoryImpl implements CustomerRepositoryQuery {
 		
 		jpql.append(" order by c.name");
 		
-		
-		
 		TypedQuery<Customer> query = manager.createQuery(jpql.toString(), Customer.class);
 		
-		if(!StringUtils.isEmpty(filter.getName())) {
-			query.setParameter("name", "%" + filter.getName() + "%");
-		}
-		
-		if(!StringUtils.isEmpty(filter.getCpf())) {
-			query.setParameter("cpf", filter.getCpf());
-		}
+		addParameters(query, filter);
 		
 		addRestrictionsPagination(query, pageable);
 		
@@ -50,13 +42,27 @@ public class CustomerRepositoryImpl implements CustomerRepositoryQuery {
 	}
 
 	private Long total(CustomerFilter filter) {
-		StringBuilder jpql = new StringBuilder("select count(c) from Customer c");
+		StringBuilder jpql = new StringBuilder("select count(c) from Customer c ");
 		
 		if(hasFilter(filter)) {
 			jpql.append("where ").append(createRestrictions(filter));
 		}
 		
-		return manager.createQuery(jpql.toString(), Long.class).getSingleResult();
+		TypedQuery<Long> query = manager.createQuery(jpql.toString(), Long.class);
+		
+		addParameters(query, filter);
+		
+		return query.getSingleResult();
+	}
+	
+	private void addParameters(TypedQuery<?> query, CustomerFilter filter) {
+		if(!StringUtils.isEmpty(filter.getName())) {
+			query.setParameter("name", "%" + filter.getName() + "%");
+		}
+		
+		if(!StringUtils.isEmpty(filter.getCpf())) {
+			query.setParameter("cpf", filter.getCpf());
+		}
 	}
 	
 	private void addRestrictionsPagination(TypedQuery<Customer> query, Pageable pageable) {
@@ -72,7 +78,7 @@ public class CustomerRepositoryImpl implements CustomerRepositoryQuery {
 		StringBuilder jpql = new StringBuilder();
 		
 		if(!StringUtils.isEmpty(filter.getName())) {
-			jpql.append("c.name like :name");
+			jpql.append("lower(c.name) like lower(:name)");
 		}
 		
 		if(!StringUtils.isEmpty(filter.getCpf())) {
