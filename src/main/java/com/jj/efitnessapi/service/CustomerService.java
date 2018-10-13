@@ -21,11 +21,17 @@ public class CustomerService {
 	}
 	
 	public Customer findById(Long id) {
-		return customerRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+		Customer customer = customerRepository.findOne(id);
+		
+		if(customer == null) {
+			throw new ResourceNotFoundException("Customer not found");
+		}
+				
+		return customer;	
 	}
 	
 	public void delete(Long id) {
-		customerRepository.deleteById(id);
+		customerRepository.delete(id);
 	}
 
 	public Page<Customer> filter(CustomerFilter filter, Pageable pageable) {
