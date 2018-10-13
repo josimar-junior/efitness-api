@@ -25,7 +25,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 			.withClient("efitness")
 			.secret("efitness123")
 			.scopes("read", "write")
-			.authorizedGrantTypes("password")
+			.authorizedGrantTypes("password", "refresh_token")
 			.accessTokenValiditySeconds(1800);
 	}
 	
@@ -34,6 +34,7 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 		endpoints
 			.tokenStore(tokenStore())
 			.accessTokenConverter(accessTokenConverter())
+			.reuseRefreshTokens(false)
 			.authenticationManager(authenticationManager);
 	}
 	
