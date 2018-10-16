@@ -26,7 +26,8 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 			.secret("efitness123")
 			.scopes("read", "write")
 			.authorizedGrantTypes("password", "refresh_token")
-			.accessTokenValiditySeconds(1800);
+			.accessTokenValiditySeconds(1800)
+			.refreshTokenValiditySeconds(3600 * 24);
 	}
 	
 	@Override

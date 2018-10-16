@@ -5,23 +5,29 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotBlank;
 
 import com.jj.efitnessapi.model.constants.Profile;
 
 @Entity
-@Table(name = "owner")
-public class Owner extends Person {
+@Table(name = "system_user")
+public class SystemUser extends Person {
 
 	private static final long serialVersionUID = 4352764025292636644L;
 	
+	@NotBlank
 	@Column(nullable = false)
 	private String login;
 	
+	@NotBlank
 	@Column(nullable = false)
 	private String password;
 	
+	@NotNull
 	@Enumerated(EnumType.STRING)
-	private Profile profiles;
+	private Profile profile;
 
 	public String getLogin() {
 		return login;
@@ -39,12 +45,12 @@ public class Owner extends Person {
 		this.password = password;
 	}
 
-	public Profile getProfiles() {
-		return profiles;
+	public Profile getProfile() {
+		return profile;
 	}
 
-	public void setProfiles(Profile profiles) {
-		this.profiles = profiles;
+	public void setProfile(Profile profile) {
+		this.profile = profile;
 	}
 
 }

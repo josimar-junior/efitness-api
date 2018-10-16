@@ -8,29 +8,35 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.SequenceGenerator;
+
+import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
 import org.hibernate.validator.constraints.br.CPF;
 
 @MappedSuperclass
-public class Person implements Serializable {
+public abstract class Person implements Serializable {
 
 	private static final long serialVersionUID = -7443294591622782993L;
-	
+
 	@Id
 	@SequenceGenerator(name = "person_generator", sequenceName = "person_id_seq")
 	@GeneratedValue(generator = "person_generator", strategy = GenerationType.SEQUENCE)
 	private Long id;
-	
+
 	@NotBlank
 	@Column(nullable = false)
 	private String name;
-	
+
 	@NotBlank
 	@CPF
 	@Column(nullable = false)
 	private String cpf;
-	
+
+	@Email
+	@NotBlank
+	private String email;
+
 	@Column(nullable = false)
 	private boolean status = true;
 
@@ -56,6 +62,14 @@ public class Person implements Serializable {
 
 	public void setCpf(String cpf) {
 		this.cpf = cpf;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public boolean isStatus() {
