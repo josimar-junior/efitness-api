@@ -11,15 +11,19 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import com.jj.efitnessapi.config.property.EfitnessApiProperty;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilter implements Filter {
 
-	private String allowedOrigin = "";
+	@Autowired
+	private EfitnessApiProperty efitnessApiProperty;
 	
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -33,10 +37,10 @@ public class CorsFilter implements Filter {
 		HttpServletRequest req = (HttpServletRequest) request;
 		HttpServletResponse res = (HttpServletResponse) response;
 		
-		res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+		res.setHeader("Access-Control-Allow-Origin", efitnessApiProperty.getAllowedOrigin());
 		res.setHeader("Access-Control-Allow-Credentials", "true");
 		
-		if(req.getMethod().equals("OPTIONS") && allowedOrigin.equals(req.getHeader("Origin"))) {
+		if(req.getMethod().equals("OPTIONS") && efitnessApiProperty.getAllowedOrigin().equals(req.getHeader("Origin"))) {
 			res.setHeader("Access-Control-Allow-Methods", "POST, GET, DELETE, PUT, OPTIONS");
 			res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept");
 			res.setHeader("Access-Control-Max-Age", "3600");
