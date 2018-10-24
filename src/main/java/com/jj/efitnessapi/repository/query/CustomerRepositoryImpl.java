@@ -1,6 +1,10 @@
 package com.jj.efitnessapi.repository.query;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,49 +24,51 @@ public class CustomerRepositoryImpl implements CustomerRepositoryQuery {
 	@Override
 	public Page<Customer> filter(CustomerFilter filter, Pageable pageable) {
 		
-		StringBuilder jpql = new StringBuilder("from Customer c ");
+		StringBuilder jpql = new StringBuilder("from Customer c where 1=1 ");
+		Map<String, Object> parameters = new HashMap<>();
 		
-		if(hasFilter(filter)) {
-			jpql.append("where ").append(createRestrictions(filter));
-		}
+		setParametersIfRequired(filter, jpql, parameters);
 		
 		jpql.append(" order by c.name");
 		
 		TypedQuery<Customer> query = manager.createQuery(jpql.toString(), Customer.class);
 		
-		addParameters(query, filter);
+		setParametersQuery(parameters, query);
 		
 		addRestrictionsPagination(query, pageable);
 		
 		return new PageImpl<>(query.getResultList(), pageable, total(filter));
 	}
 	
-	private boolean hasFilter(CustomerFilter filter) {
-		return filter.getName() != null || filter.getName() != null;
-	}
-
-	private Long total(CustomerFilter filter) {
-		StringBuilder jpql = new StringBuilder("select count(c) from Customer c ");
-		
-		if(hasFilter(filter)) {
-			jpql.append("where ").append(createRestrictions(filter));
-		}
-		
-		TypedQuery<Long> query = manager.createQuery(jpql.toString(), Long.class);
-		
-		addParameters(query, filter);
-		
-		return query.getSingleResult();
-	}
-	
-	private void addParameters(TypedQuery<?> query, CustomerFilter filter) {
-		if(!StringUtils.isEmpty(filter.getName())) {
-			query.setParameter("name", "%" + filter.getName() + "%");
+	private void setParametersIfRequired(CustomerFilter filter, StringBuilder jpql, Map<String, Object> parameters) {
+		if(StringUtils.hasText(filter.getName())) {
+			jpql.append("and c.name like :name ");
+			parameters.put("name", "%" + filter.getName() + "%");
 		}
 		
 		if(!StringUtils.isEmpty(filter.getCpf())) {
-			query.setParameter("cpf", filter.getCpf());
+			jpql.append("and c.cpf = :cpf ");
+			parameters.put("cpf", filter.getCpf());
 		}
+	}
+	
+	private void setParametersQuery(Map<String, Object> parameters, Query query) {
+		parameters.forEach((k, v) -> {
+			query.setParameter(k, v);
+		});
+	}
+
+	private Long total(CustomerFilter filter) {
+		StringBuilder jpql = new StringBuilder("select count(c) from Customer c where 1=1 ");
+		Map<String, Object> parameters = new HashMap<>();
+		
+		setParametersIfRequired(filter, jpql, parameters);
+		
+		TypedQuery<Long> query = manager.createQuery(jpql.toString(), Long.class);
+		
+		setParametersQuery(parameters, query);
+		
+		return query.getSingleResult();
 	}
 	
 	private void addRestrictionsPagination(TypedQuery<Customer> query, Pageable pageable) {
@@ -74,20 +80,4 @@ public class CustomerRepositoryImpl implements CustomerRepositoryQuery {
 		query.setMaxResults(totalRecordsPerPage);
 	}
 	
-	private String createRestrictions(CustomerFilter filter) {
-		StringBuilder jpql = new StringBuilder();
-		
-		if(!StringUtils.isEmpty(filter.getName())) {
-			jpql.append("lower(c.name) like lower(:name)");
-		}
-		
-		if(!StringUtils.isEmpty(filter.getCpf())) {
-			if(!StringUtils.isEmpty(filter.getName()))
-				jpql.append("c.cpf = :cpf");
-			else
-				jpql.append("and c.cpf = :cpf");
-		}
-		
-		return jpql.toString();
-	}
 }
